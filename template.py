@@ -7,8 +7,11 @@ from PyQt5.QtWidgets import QLabel
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 from matplotlib.figure import Figure
+from PyQt5 import QtWidgets, QtGui, QtCore
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plot
 import numpy as np
+from scipy import misc
 import cv2
 
 ##########################################
