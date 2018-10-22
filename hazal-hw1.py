@@ -221,6 +221,50 @@ class App(QMainWindow):
             LUT[g,0] = j
             
         return LUT
+    
+    def matchHistogram(self,I):
+        
+        row, column, channel = I.shape
+        
+        
+        self.Lut_red = np.zeros([256,1]) 
+        self.input_red_cdf = self.get_cdf(self.histogram_list1[0])
+        self.target_red_cdf = self.get_cdf(self.histogram_list2[0])
+        
+       
+        
+        self.Lut_red = self.get_lut(self.input_red_cdf,self.target_red_cdf)
+       
+        self.Lut_green = np.zeros( [256,1]) 
+        self.input_green_cdf = self.get_cdf(self.histogram_list1[1])
+        self.target_green_cdf = self.get_cdf(self.histogram_list2[1])
+        
+        self.Lut_green = self.get_lut(self.input_green_cdf,self.target_green_cdf)
+          
+        self.Lut_blue = np.zeros( [256,1]) 
+        self.input_blue_cdf = self.get_cdf(self.histogram_list1[2])
+        self.target_blue_cdf = self.get_cdf(self.histogram_list2[2])
+        
+        self.Lut_blue = self.get_lut(self.input_blue_cdf,self.target_blue_cdf)
+        
+        K = np.zeros([row,column,channel], dtype=np.uint8)
+        
+        for i in range(0,row):
+            for j in range(0,column):
+                red_band_val  = I[i][j][0]
+                new_val_red = self.Lut_red[red_band_val,0]
+                K[i][j][0] = new_val_red
+                
+                green_band_val  = I[i][j][1]
+                new_val_green = self.Lut_green[green_band_val,0]
+                K[i][j][1] = new_val_green
+                
+                blue_band_val  = I[i][j][2]
+                new_val_blue = self.Lut_blue[blue_band_val,0]
+                K[i][j][2] = new_val_blue
+        
+        self.openResultImage(K.astype(np.uint8))
+    
     def plotHistogram1(self, hist1,hist2,hist3):
  
         ax = self.figure.add_subplot(311)
