@@ -22,10 +22,13 @@ from scipy import misc
 import cv2
 from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
 if is_pyqt5():
+    from matplotlib.backends.backend_qt5agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 else:
     from matplotlib.backends.backend_qt4agg import (
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+from matplotlib.figure import Figure
+import PIL
 ##########################################
 ## Do not forget to delete "return NotImplementedError"
 ## while implementing a function
@@ -40,6 +43,8 @@ class App(QMainWindow):
         self.histogram_list2= None
         self.histogram_list3= None
 
+        self.check_input_flag = False
+        self.check_target_flag = False
         self.title = 'Histogram Equalization'
         # You can define other things in here
         self.left = 70
@@ -51,36 +56,30 @@ class App(QMainWindow):
     def openInputImage(self):
         # This function is called when the user clicks File->Input Image.
         
-        #name = QFileDialog.getOpenFileName(self, 'Open Input')
-       # file = open(name,'r')
-       # name = 'C:\\Users\\hazal\\Desktop\\Myself\\Fall2018\\Computer Vision\\BLG453E_hw1\\BLG453E_hw1\\color1.png'
-        #pixmap=QPixmap(name)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
-        img = cv2.imread(fileName)
-        print("img",img)
+        self.img = cv2.imread(fileName)
+        
+        if not(self.img is None):
+            self.check_input_flag = True
         self.label_image = QLabel(self)
-     #   self.label_image.setGeometry(5,5,231,550)
         input_img = QImage(fileName)
-     #   input_img = input_img.scaled(2/3*input_img.width,1*input_img.height)
-     #   input_img = input_img.
         self.label_image.setPixmap(QPixmap.fromImage(input_img))
-     #   self.label_image.adjustSize()
-      #  self.resize(input_img.width(),input_img.height())
         vbox1 = QVBoxLayout()
         vbox1.addWidget(self.label_image)
-       # vbox.setGeometry(15,15,31,50)
-        self.groupbox1.setLayout(vbox1)
-        self.calcHistogram(img)
-        
+     
         self.calc_hist1 = self.calcHistogram(self.img)
         
         self.histogram_list1 = self.calc_hist1
-
+        
+     #   self.red_band = self.calc_hist1[0]
+     #   self.green_band  = self.calc_hist1[1]
+     #   self.blue_band = self.calc_hist1[2]
         vbox1.addWidget(self.canvas)
         self.canvas =self.plotHistogram1(self.histogram_list1[0],self.histogram_list1[1],self.histogram_list1[2])
         self.groupbox1.setLayout(vbox1)
+      
     def openTargetImage(self):
         # This function is called when the user clicks File->Target Image.
         options = QFileDialog.Options()
@@ -88,10 +87,15 @@ class App(QMainWindow):
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
         self.label_image = QLabel(self)
         
+        img2 = cv2.imread(fileName)
+        if not(img2 is None):
+            self.check_target_flag = True
         target_img = QImage(fileName)
         self.label_image.setPixmap(QPixmap.fromImage(target_img))
         vbox2 = QVBoxLayout()
         vbox2.addWidget(self.label_image)
+            
+        if not(img2 is None):
             self.calc_hist = self.calcHistogram(img2)
             self.histogram_list2 = self.calc_hist
             vbox2.addWidget(self.canvas2)
@@ -115,6 +119,7 @@ class App(QMainWindow):
         vbox3.addWidget(self.canvas3)
         self.canvas3 =self.plotHistogram3(self.histogram_list3[0],self.histogram_list3[1],self.histogram_list3[2])
         self.groupbox3.setLayout(vbox3)     
+         
     def initUI(self):
       #  return NotImplementedError
         # Write GUI initialization code
@@ -125,6 +130,8 @@ class App(QMainWindow):
         self.canvas = FigureCanvas(self.figure)
         self.figure2 = plt.figure(figsize=(width, height), dpi=dpi)
         self.canvas2 = FigureCanvas(self.figure2)
+        self.figure3 = plt.figure(figsize=(width, height), dpi=dpi)
+        self.canvas3 = FigureCanvas(self.figure3)
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
@@ -164,20 +171,31 @@ class App(QMainWindow):
         extractAction.triggered.connect(self.histogramButtonClicked)
         self.toolbar = self.addToolBar('Equalize Histogram')
         self.toolbar.addAction(extractAction)
-       
+        
+        self.error_dialog1 = QtWidgets.QErrorMessage()
+        self.error_dialog2 = QtWidgets.QErrorMessage()
+        self.error_dialog3 = QtWidgets.QErrorMessage()
         self.show()
 
-    def histogramButtonClicked(self):
-        if not self.inputLoaded and not self.targetLoaded:
-            # Error: "First load input and target images" in MessageBox
-            return NotImplementedError
-        if not self.inputLoaded:
-            # Error: "Load input image" in MessageBox
-            return NotImplementedError
-        elif not self.targetLoaded:
-            # Error: "Load target image" in MessageBox
-            return NotImplementedError
-
+    def inputLoaded(self):
+        if(self.check_input_flag == True):
+            return True
+        else:
+            return False
+    def targetLoaded(self):
+        if(self.check_target_flag == True):
+            return True
+        else:
+            return False
+    def histogramButtonClicked(self):       
+        if (self.inputLoaded() == False  and  self.targetLoaded() == False):
+            self.error_dialog1.showMessage('Error: "First load input and target images')
+        elif not(self.inputLoaded()):
+            self.error_dialog2.showMessage('Error: Load input image')
+        elif not(self.targetLoaded()):
+            self.error_dialog3.showMessage('Error: "Load target image')
+        else:
+            self.matchHistogram(self.img)
     def calcHistogram(self, I):
         # Calculate histogram
         row, column, channel = I.shape
