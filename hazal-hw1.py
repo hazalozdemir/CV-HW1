@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct 21 18:06:50 2018
+
+@author: hazal
+"""
+
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, \
     QPushButton, QGroupBox, QAction, QFileDialog
@@ -13,7 +20,12 @@ import matplotlib.pyplot as plot
 import numpy as np
 from scipy import misc
 import cv2
-
+from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
+if is_pyqt5():
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+else:
+    from matplotlib.backends.backend_qt4agg import (
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 ##########################################
 ## Do not forget to delete "return NotImplementedError"
 ## while implementing a function
@@ -24,6 +36,9 @@ class App(QMainWindow):
         super(App, self).__init__()
        # return NotImplementedError
 
+        self.histogram_list1= None
+        self.histogram_list2= None
+        self.histogram_list3= None
 
         self.title = 'Histogram Equalization'
         # You can define other things in here
@@ -59,10 +74,13 @@ class App(QMainWindow):
         self.groupbox1.setLayout(vbox1)
         self.calcHistogram(img)
         
-        #PlotCanvas.plotHistogram(self,hist)
+        self.calc_hist1 = self.calcHistogram(self.img)
         
-        #return NotImplementedError
+        self.histogram_list1 = self.calc_hist1
 
+        vbox1.addWidget(self.canvas)
+        self.canvas =self.plotHistogram1(self.histogram_list1[0],self.histogram_list1[1],self.histogram_list1[2])
+        self.groupbox1.setLayout(vbox1)
     def openTargetImage(self):
         # This function is called when the user clicks File->Target Image.
         options = QFileDialog.Options()
@@ -74,6 +92,10 @@ class App(QMainWindow):
         self.label_image.setPixmap(QPixmap.fromImage(target_img))
         vbox2 = QVBoxLayout()
         vbox2.addWidget(self.label_image)
+            self.calc_hist = self.calcHistogram(img2)
+            self.histogram_list2 = self.calc_hist
+            vbox2.addWidget(self.canvas2)
+            self.canvas2 =self.plotHistogram2(self.histogram_list2[0],self.histogram_list2[1],self.histogram_list2[2])
         self.groupbox2.setLayout(vbox2)
         
         
@@ -82,22 +104,29 @@ class App(QMainWindow):
     def initUI(self):
       #  return NotImplementedError
         # Write GUI initialization code
+        width = 4
+        height = 2
+        dpi = 100
+        self.figure = plt.figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvas(self.figure)
+        self.figure2 = plt.figure(figsize=(width, height), dpi=dpi)
+        self.canvas2 = FigureCanvas(self.figure2)
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
         
         self.groupbox1 = QtWidgets.QGroupBox(self)
         self.groupbox1.setTitle('Input')
-        self.groupbox1.setGeometry(QtCore.QRect(70, 70, 231, 551))
+        self.groupbox1.setGeometry(QtCore.QRect(70, 70, 431, 951))
         
         
         self.groupbox2 = QtWidgets.QGroupBox(self)
         self.groupbox2.setTitle('Target')
-        self.groupbox2.setGeometry(QtCore.QRect(270, 70, 231, 551))
+        self.groupbox2.setGeometry(QtCore.QRect(570, 70, 431, 951))
         
         self.groupbox3 = QtWidgets.QGroupBox(self)
         self.groupbox3.setTitle('Result')
-        self.groupbox3.setGeometry(QtCore.QRect(530, 70, 231, 551))
+        self.groupbox3.setGeometry(QtCore.QRect(1070, 70, 431, 951))
         
         mainMenu = self.menuBar() 
         fileMenu = mainMenu.addMenu('File')
@@ -137,20 +166,80 @@ class App(QMainWindow):
 
     def calcHistogram(self, I):
         # Calculate histogram
-        return NotImplementedError
+        row, column, channel = I.shape
+  
+        #get r,g,b channels
+        red_channel = I[:,:,0]
+        green_channel = I[:,:,1]
+        blue_channel = I[:,:,2]
+       
+        #histogram allocation
+        red_hist = np.zeros([256,1])
+        green_hist = np.zeros([256,1])
+        blue_hist = np.zeros([256,1])
+  
+        for i in range(0,row):
+            for j in range(0, column):
+                pix_num_red = red_channel[i][j]
+                red_hist[pix_num_red,0] = red_hist[pix_num_red,0] + 1
+                
+                pix_num_green = green_channel[i][j]
+                green_hist[pix_num_green,0] = green_hist[pix_num_green,0] + 1
+                
+                pix_num_blue = blue_channel[i][j]
+                blue_hist[pix_num_blue,0] = blue_hist[pix_num_blue,0] + 1
+        
+ #       x = range(0,256)
+  #      plt.bar(x, blue_hist[:,0])
+        return [red_hist,green_hist, blue_hist]
+    def plotHistogram1(self, hist1,hist2,hist3):
+ 
+        ax = self.figure.add_subplot(311)
+        x = range(0, 256)   
+        ax.bar(x, hist3[:,0], color = 'red')
+        
+        ax1 = self.figure.add_subplot(312)
+        x = range(0, 256)
+        ax1.bar(x, hist2[:,0], color = 'green')
+        
+        ax2 = self.figure.add_subplot(313)
+        x = range(0, 256)
+        ax2.bar(x, hist1[:,0], color = 'blue')
+        
+        self.canvas.draw_idle()
+ 
+    def plotHistogram2(self, hist1,hist2,hist3):
 
-class PlotCanvas(FigureCanvas):
-    def __init__(self, hist, parent=None, width=5, height=4, dpi=100):
-        return NotImplementedError
-        # Init Canvas
-        self.plotHistogram(hist)
-
-    def plotHistogram(self, hist):
-        return NotImplementedError
-        # Plot histogram
-
-        self.draw()
-
+        bx = self.figure2.add_subplot(311)
+        x = range(0, 256)   
+        bx.bar(x, hist3[:,0], color = 'red')
+        
+        bx1 = self.figure2.add_subplot(312)
+        x = range(0, 256)
+        bx1.bar(x, hist2[:,0], color = 'green')
+        
+        bx2 = self.figure2.add_subplot(313)
+        x = range(0, 256)
+        bx2.bar(x, hist1[:,0], color = 'blue')
+        
+        self.canvas2.draw_idle()
+ 
+    def plotHistogram3(self, hist1,hist2,hist3):
+     
+        cx = self.figure3.add_subplot(311)
+        x = range(0, 256)   
+        cx.bar(x, hist3[:,0], color = 'red')
+        
+        cx1 = self.figure3.add_subplot(312)
+        x = range(0, 256)
+        cx1.bar(x, hist2[:,0], color = 'green')
+        
+        cx2 = self.figure3.add_subplot(313)
+        x = range(0, 256)
+        cx2.bar(x, hist1[:,0], color = 'blue')
+        
+        self.canvas3.draw_idle()
+            
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
