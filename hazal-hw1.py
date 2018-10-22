@@ -144,21 +144,32 @@ class App(QMainWindow):
 
     def calcHistogram(self, I):
         # Calculate histogram
-        return NotImplementedError
-
-class PlotCanvas(FigureCanvas):
-    def __init__(self, hist, parent=None, width=5, height=4, dpi=100):
-        return NotImplementedError
-        # Init Canvas
-        self.plotHistogram(hist)
-
-    def plotHistogram(self, hist):
-        return NotImplementedError
-        # Plot histogram
-
-        self.draw()
-
-
+        row, column, channel = I.shape
+  
+        #get r,g,b channels
+        red_channel = I[:,:,0]
+        green_channel = I[:,:,1]
+        blue_channel = I[:,:,2]
+       
+        #histogram allocation
+        red_hist = np.zeros([256,1])
+        green_hist = np.zeros([256,1])
+        blue_hist = np.zeros([256,1])
+  
+        for i in range(0,row):
+            for j in range(0, column):
+                pix_num_red = red_channel[i][j]
+                red_hist[pix_num_red,0] = red_hist[pix_num_red,0] + 1
+                
+                pix_num_green = green_channel[i][j]
+                green_hist[pix_num_green,0] = green_hist[pix_num_green,0] + 1
+                
+                pix_num_blue = blue_channel[i][j]
+                blue_hist[pix_num_blue,0] = blue_hist[pix_num_blue,0] + 1
+        
+ #       x = range(0,256)
+  #      plt.bar(x, blue_hist[:,0])
+        return [red_hist,green_hist, blue_hist]
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()
