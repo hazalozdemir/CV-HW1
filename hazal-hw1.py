@@ -98,9 +98,23 @@ class App(QMainWindow):
             self.canvas2 =self.plotHistogram2(self.histogram_list2[0],self.histogram_list2[1],self.histogram_list2[2])
         self.groupbox2.setLayout(vbox2)
         
+    def openResultImage(self,K):
         
-        
+        cv2.imwrite('result.jpg', K.astype(np.uint8))
 
+        self.label_image = QLabel(self)
+        pixmap = QPixmap('result.jpg')
+        self.label_image.setPixmap(pixmap)
+       
+        vbox3 = QVBoxLayout()
+        vbox3.addWidget(self.label_image)
+        
+        self.calc_hist = self.calcHistogram(K)
+        self.histogram_list3 = self.calc_hist
+        
+        vbox3.addWidget(self.canvas3)
+        self.canvas3 =self.plotHistogram3(self.histogram_list3[0],self.histogram_list3[1],self.histogram_list3[2])
+        self.groupbox3.setLayout(vbox3)     
     def initUI(self):
       #  return NotImplementedError
         # Write GUI initialization code
