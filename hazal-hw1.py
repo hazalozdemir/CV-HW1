@@ -20,7 +20,12 @@ import matplotlib.pyplot as plot
 import numpy as np
 from scipy import misc
 import cv2
-
+from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
+if is_pyqt5():
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
+else:
+    from matplotlib.backends.backend_qt4agg import (
+        FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 ##########################################
 ## Do not forget to delete "return NotImplementedError"
 ## while implementing a function
@@ -66,10 +71,13 @@ class App(QMainWindow):
         self.groupbox1.setLayout(vbox1)
         self.calcHistogram(img)
         
-        #PlotCanvas.plotHistogram(self,hist)
+        self.calc_hist1 = self.calcHistogram(self.img)
         
-        #return NotImplementedError
+        self.histogram_list1 = self.calc_hist1
 
+        vbox1.addWidget(self.canvas)
+        self.canvas =self.plotHistogram1(self.histogram_list1[0],self.histogram_list1[1],self.histogram_list1[2])
+        self.groupbox1.setLayout(vbox1)
     def openTargetImage(self):
         # This function is called when the user clicks File->Target Image.
         options = QFileDialog.Options()
@@ -81,6 +89,10 @@ class App(QMainWindow):
         self.label_image.setPixmap(QPixmap.fromImage(target_img))
         vbox2 = QVBoxLayout()
         vbox2.addWidget(self.label_image)
+            self.calc_hist = self.calcHistogram(img2)
+            self.histogram_list2 = self.calc_hist
+            vbox2.addWidget(self.canvas2)
+            self.canvas2 =self.plotHistogram2(self.histogram_list2[0],self.histogram_list2[1],self.histogram_list2[2])
         self.groupbox2.setLayout(vbox2)
         
         
@@ -89,6 +101,12 @@ class App(QMainWindow):
     def initUI(self):
       #  return NotImplementedError
         # Write GUI initialization code
+        width = 4
+        height = 2
+        dpi = 100
+        self.figure = plt.figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas2 = FigureCanvas(self.figure2)
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
