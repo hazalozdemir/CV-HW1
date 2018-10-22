@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Oct 21 18:06:50 2018
+
+@author: hazal
+"""
+
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, \
     QPushButton, QGroupBox, QAction, QFileDialog
