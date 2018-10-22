@@ -30,11 +30,11 @@ else:
 from matplotlib.figure import Figure
 import PIL
 ##########################################
-## Do not forget to delete "return NotImplementedError"
-## while implementing a function
+## Since opencv read images backward, i had to dedicated 0: channel for blue
+## 2: for red, all implementations done according to this
 ########################################
 
-class App(QMainWindow):
+class App(QMainWindow):    
     def __init__(self):
         super(App, self).__init__()
        # return NotImplementedError
