@@ -192,6 +192,20 @@ class App(QMainWindow):
  #       x = range(0,256)
   #      plt.bar(x, blue_hist[:,0])
         return [red_hist,green_hist, blue_hist]
+    def get_cdf(self, hist):
+        
+        total_sum = 0
+        cdf = np.zeros([256,1])
+        
+        for i in range(0,256):
+            total_sum = total_sum + hist[i,0]
+        
+        cdf[0,0] = (hist[0,0] / total_sum )
+        
+        for i in range(1,256):
+            cdf[i,0]= (hist[i,0] / total_sum) + cdf[i-1,0]
+        
+        return cdf
     def plotHistogram1(self, hist1,hist2,hist3):
  
         ax = self.figure.add_subplot(311)
