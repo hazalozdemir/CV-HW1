@@ -206,6 +206,21 @@ class App(QMainWindow):
             cdf[i,0]= (hist[i,0] / total_sum) + cdf[i-1,0]
         
         return cdf
+    def get_lut(self,cdf1, cdf2):
+        #histogram matching by using look up table
+        LUT = np.zeros([256,1])
+        
+        for g in range (0,256):
+            j = 1    
+            while (j < 255 ):
+                if (cdf1[g,0] > cdf2[j-1,0] and (cdf1[g,0] <= cdf2[j,0])):
+                    break
+                else:
+                    j = j + 1
+            
+            LUT[g,0] = j
+            
+        return LUT
     def plotHistogram1(self, hist1,hist2,hist3):
  
         ax = self.figure.add_subplot(311)
